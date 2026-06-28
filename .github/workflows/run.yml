@@ -2,7 +2,7 @@ name: CS2 Tracker
 
 on:
   schedule:
-    - cron: "*/7 * * * *"
+    - cron: "*/5 * * * *"
 jobs:
   run-script:
     runs-on: ubuntu-latest
