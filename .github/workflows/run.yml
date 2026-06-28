@@ -2,9 +2,7 @@ name: CS2 Tracker
 
 on:
   schedule:
-    - cron: "*/5 * * * *"   # every 5 minutes
-  workflow_dispatch:        # lets you manually run it
-
+    - cron: "*/7 * * * *"
 jobs:
   run-script:
     runs-on: ubuntu-latest
