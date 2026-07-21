@@ -21,7 +21,7 @@ WINGMAN_RANKS = {
     7: "Gold Nova 1",
     8: "Gold Nova 2",
     9: "Gold Nova 3",
-    10: "Gold Nova 4",
+    10: "Gold Nova Master",
     11: "Master Guardian 1",
     12: "Master Guardian 2",
     13: "Master Guardian Elite",
