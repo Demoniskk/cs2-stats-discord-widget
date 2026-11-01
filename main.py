@@ -190,7 +190,7 @@ def check_and_update():
         print("Failed to get Leetify data")
         return
 
-    inventory_value = def get_buff163_value()
+    inventory_value = get_buff163_value()
     cs2_hours = get_cs2_hours()
 
     premier = data.get("ranks", {}).get("premier")
