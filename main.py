@@ -67,18 +67,69 @@ def get_leetify_data():
         return None
 
 
-def get_priceempire_value():
-    url = f"https://pricempire.com/api-data/v1/inventory?steam_id={STEAM64_ID}&context=2&app_id=730&force=false"
-
+def get_buff163_value():
     try:
-        r = requests.get(url)
-        r.raise_for_status()
-        data = r.json()
+        url = f"https://steamcommunity.com/inventory/{STEAM64_ID}/730/2"
+        params = {"l": "english", "count": 2000}
 
-        total_value = data.get("provider_breakdown", {}).get("buff163", {}).get("totalValue", 0)
-        return f"{total_value / 100:.2f}"
+        inventory = []
+
+        while True:
+            r = requests.get(url, params=params, timeout=30)
+            r.raise_for_status()
+            data = r.json()
+
+            if data.get("success") != 1:
+                raise Exception(f"Steam inventory failed: {data}")
+
+            descriptions = {
+                (d["classid"], d["instanceid"]): d
+                for d in data.get("descriptions", [])
+            }
+
+            for asset in data.get("assets", []):
+                description = descriptions.get(
+                    (asset["classid"], asset["instanceid"])
+                )
+
+                if description and description.get("market_hash_name"):
+                    inventory.append({
+                        "name": description["market_hash_name"],
+                        "amount": int(asset.get("amount", 1))
+                    })
+
+            if not data.get("more_items"):
+                break
+
+            params["start_assetid"] = data["last_assetid"]
+
+        quantities = Counter(item["name"] for item in inventory)
+        skin_names = list(quantities.keys())
+
+        total_value = 0.0
+
+        for i in range(0, len(skin_names), 500):
+            batch = skin_names[i:i + 500]
+
+            r = requests.post(
+                "https://api.openskin.dev/v1/prices/batch",
+                json={"items": batch},
+                timeout=30
+            )
+            r.raise_for_status()
+            data = r.json()
+
+            for item in data.get("results", []):
+                name = item.get("item")
+                buff = item.get("buff")
+
+                if name and buff and buff.get("ask") is not None:
+                    total_value += float(buff["ask"]) * quantities[name]
+
+        return f"{total_value:.2f}"
+
     except Exception as e:
-        print(f"PriceEmpire API error: {e}")
+        print(f"BUFF163 inventory API error: {e}")
         return "0.00"
 
 
@@ -139,7 +190,7 @@ def check_and_update():
         print("Failed to get Leetify data")
         return
 
-    inventory_value = get_priceempire_value()
+    inventory_value = def get_buff163_value()
     cs2_hours = get_cs2_hours()
 
     premier = data.get("ranks", {}).get("premier")
